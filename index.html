@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI商品图换背景 · Fish网创</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0f0f0f;
+  --ink2:#3a3a3a;
+  --ink3:#888;
+  --bg:#fafaf8;
+  --surface:#f3f2ee;
+  --gold:#c8a96e;
+  --gold2:#e8c98e;
+  --accent:#1a3a5c;
+  --radius:12px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 5vw;height:60px;
+  background:rgba(250,250,248,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(0,0,0,.06);
+}
+.logo{
+  font-family:'Noto Serif SC',serif;
+  font-size:18px;font-weight:600;
+  letter-spacing:.05em;color:var(--ink);
+  text-decoration:none;
+}
+.logo span{color:var(--gold)}
+.nav-cta{
+  background:var(--ink);color:#fff;
+  padding:8px 20px;border-radius:30px;
+  font-size:13px;font-weight:500;
+  text-decoration:none;letter-spacing:.03em;
+  transition:opacity .15s;
+}
+.nav-cta:hover{opacity:.8}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:100px 5vw 60px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,169,110,.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(26,58,92,.06) 0%, transparent 60%);
+}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(200,169,110,.1);
+  border:1px solid rgba(200,169,110,.3);
+  color:var(--gold);padding:5px 14px;
+  border-radius:30px;font-size:12px;font-weight:500;
+  letter-spacing:.05em;margin-bottom:28px;
+}
+.badge::before{content:'✦';font-size:10px}
+h1{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(32px,6vw,64px);
+  font-weight:600;line-height:1.2;
+  letter-spacing:-.01em;
+  margin-bottom:20px;
+  position:relative;
+}
+h1 em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  font-size:clamp(15px,2vw,18px);
+  color:var(--ink2);max-width:520px;
+  line-height:1.8;margin-bottom:40px;
+}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:64px}
+.btn-primary{
+  background:var(--ink);color:#fff;
+  padding:14px 32px;border-radius:30px;
+  font-size:15px;font-weight:500;
+  text-decoration:none;letter-spacing:.03em;
+  transition:transform .15s,opacity .15s;
+}
+.btn-primary:hover{transform:translateY(-2px);opacity:.9}
+.btn-secondary{
+  background:transparent;color:var(--ink);
+  padding:14px 32px;border-radius:30px;
+  font-size:15px;font-weight:400;
+  text-decoration:none;letter-spacing:.03em;
+  border:1px solid rgba(0,0,0,.15);
+  transition:border-color .15s;
+}
+.btn-secondary:hover{border-color:var(--ink)}
+
+/* BEFORE/AFTER 展示 */
+.compare-strip{
+  display:flex;gap:20px;
+  justify-content:center;flex-wrap:wrap;
+  position:relative;z-index:1;
+}
+.compare-card{
+  background:#fff;
+  border-radius:var(--radius);
+  border:1px solid rgba(0,0,0,.07);
+  overflow:hidden;width:160px;
+  box-shadow:0 4px 24px rgba(0,0,0,.06);
+}
+.compare-card img{width:100%;height:130px;object-fit:cover}
+.compare-card .card-label{
+  font-size:11px;text-align:center;
+  padding:8px;color:var(--ink3);
+  border-top:1px solid rgba(0,0,0,.05);
+}
+.arrow-between{
+  display:flex;align-items:center;
+  font-size:24px;color:var(--gold);
+  align-self:center;
+}
+
+/* 模拟商品图效果区域 */
+.mock-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  max-width:520px;margin:0 auto;
+}
+.mock-item{
+  aspect-ratio:1;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+  border:1px solid rgba(0,0,0,.07);
+  box-shadow:0 2px 12px rgba(0,0,0,.05);
+  position:relative;overflow:hidden;
+}
+.mock-tag{
+  position:absolute;bottom:6px;right:6px;
+  font-size:10px;padding:2px 8px;
+  border-radius:20px;font-family:'Noto Sans SC',sans-serif;
+  font-weight:500;
+}
+
+/* SECTION */
+section{padding:80px 5vw}
+.section-label{
+  font-size:12px;letter-spacing:.15em;
+  color:var(--gold);font-weight:500;
+  text-transform:uppercase;margin-bottom:12px;
+}
+.section-title{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(24px,4vw,40px);
+  font-weight:600;line-height:1.3;
+  margin-bottom:16px;
+}
+.section-sub{
+  font-size:16px;color:var(--ink2);
+  max-width:480px;line-height:1.8;
+  margin-bottom:48px;
+}
+
+/* FEATURES */
+.features{background:var(--bg)}
+.feat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;max-width:900px;
+}
+.feat-card{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.07);
+  border-radius:var(--radius);
+  padding:28px 24px;
+  transition:transform .2s,box-shadow .2s;
+}
+.feat-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.08)}
+.feat-icon{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:16px;
+}
+.feat-card h3{font-size:16px;font-weight:500;margin-bottom:8px}
+.feat-card p{font-size:14px;color:var(--ink2);line-height:1.7}
+
+/* HOW IT WORKS */
+.how{background:var(--surface)}
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;max-width:860px;position:relative;
+}
+.step{
+  background:#fff;border-radius:var(--radius);
+  padding:24px 20px;
+  border:1px solid rgba(0,0,0,.06);
+}
+.step-num{
+  font-family:'Noto Serif SC',serif;
+  font-size:36px;color:rgba(200,169,110,.25);
+  font-weight:600;line-height:1;margin-bottom:12px;
+}
+.step h3{font-size:15px;font-weight:500;margin-bottom:6px}
+.step p{font-size:13px;color:var(--ink2);line-height:1.7}
+
+/* PRICING */
+.pricing{background:var(--bg)}
+.price-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;max-width:740px;
+}
+.price-card{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:var(--radius);
+  padding:32px 28px;
+  position:relative;
+}
+.price-card.featured{
+  border-color:var(--gold);
+  background:linear-gradient(160deg,#fffdf7,#fff);
+}
+.price-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:var(--gold);color:#fff;
+  font-size:11px;font-weight:500;
+  padding:4px 14px;border-radius:20px;
+  white-space:nowrap;letter-spacing:.05em;
+}
+.price-name{font-size:14px;color:var(--ink3);margin-bottom:8px}
+.price-amount{
+  font-family:'Noto Serif SC',serif;
+  font-size:40px;font-weight:600;line-height:1;
+  margin-bottom:4px;
+}
+.price-amount span{font-size:18px;vertical-align:top;margin-top:6px;display:inline-block}
+.price-period{font-size:13px;color:var(--ink3);margin-bottom:24px}
+.price-list{list-style:none;margin-bottom:28px}
+.price-list li{
+  font-size:14px;color:var(--ink2);
+  padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05);
+  display:flex;align-items:center;gap:8px;
+}
+.price-list li::before{content:'✓';color:var(--gold);font-weight:600;font-size:13px}
+.btn-plan{
+  display:block;text-align:center;
+  padding:12px;border-radius:30px;
+  font-size:14px;font-weight:500;
+  text-decoration:none;
+  transition:all .15s;
+}
+.btn-plan-outline{
+  border:1px solid rgba(0,0,0,.15);color:var(--ink);
+}
+.btn-plan-outline:hover{border-color:var(--ink)}
+.btn-plan-fill{
+  background:var(--ink);color:#fff;
+}
+.btn-plan-fill:hover{opacity:.85}
+
+/* TESTIMONIALS */
+.testimonials{background:var(--surface)}
+.testi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:20px;max-width:860px;
+}
+.testi-card{
+  background:#fff;border-radius:var(--radius);
+  padding:24px;border:1px solid rgba(0,0,0,.06);
+}
+.testi-stars{color:var(--gold);font-size:14px;margin-bottom:12px;letter-spacing:2px}
+.testi-text{font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:16px}
+.testi-author{display:flex;align-items:center;gap:10px}
+.testi-avatar{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:500;
+  background:var(--surface);color:var(--ink2);
+}
+.testi-name{font-size:13px;font-weight:500}
+.testi-role{font-size:11px;color:var(--ink3)}
+
+/* CTA FINAL */
+.cta-final{
+  background:var(--ink);color:#fff;
+  text-align:center;padding:80px 5vw;
+}
+.cta-final .section-label{color:var(--gold2)}
+.cta-final .section-title{color:#fff;margin:0 auto 16px;max-width:520px}
+.cta-final .section-sub{color:rgba(255,255,255,.6);margin:0 auto 40px;max-width:440px}
+.btn-cta-white{
+  background:#fff;color:var(--ink);
+  padding:16px 40px;border-radius:30px;
+  font-size:16px;font-weight:500;
+  text-decoration:none;display:inline-block;
+  transition:transform .15s,opacity .15s;
+}
+.btn-cta-white:hover{transform:translateY(-2px);opacity:.95}
+
+/* FOOTER */
+footer{
+  background:var(--ink);color:rgba(255,255,255,.4);
+  text-align:center;padding:24px 5vw;
+  font-size:12px;border-top:1px solid rgba(255,255,255,.06);
+}
+footer a{color:rgba(255,255,255,.5);text-decoration:none}
+
+/* 响应式 */
+@media(max-width:600px){
+  .hero-btns{flex-direction:column;align-items:center}
+  .btn-primary,.btn-secondary{width:240px;text-align:center}
+  .compare-strip{gap:10px}
+  .compare-card{width:120px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">Fish<span>网创</span></a>
+  <a class="nav-cta" href="tool.html">立即使用</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="badge">AI 驱动 · 电商专属工具</div>
+  <h1>商品图换背景<br/><em>10秒搞定</em></h1>
+  <p class="hero-sub">
+    无需 PS，无需设计师。上传商品图，AI 自动抠图，
+    一键切换专业白底、渐变、场景背景，让你的主图点击率提升30%。
+  </p>
+  <div class="hero-btns">
+    <a href="tool.html" class="btn-primary">免费试用 → </a>
+    <a href="#how" class="btn-secondary">查看效果对比</a>
+  </div>
+
+  <!-- 背景色块模拟效果展示 -->
+  <div class="mock-grid" style="position:relative;z-index:1">
+    <div class="mock-item" style="background:#f8f8f8;">
+      👟
+      <span class="mock-tag" style="background:#e8f5e9;color:#2e7d32;">白底</span>
+    </div>
+    <div class="mock-item" style="background:linear-gradient(135deg,#e8f4fd,#f8f8ff);">
+      👜
+      <span class="mock-tag" style="background:#e3f2fd;color:#1565c0;">蓝渐变</span>
+    </div>
+    <div class="mock-item" style="background:#1a1a2e;">
+      ⌚
+      <span class="mock-tag" style="background:#311b92;color:#e8eaf6;">深色</span>
+    </div>
+    <div class="mock-item" style="background:linear-gradient(135deg,#fde8f0,#fff);">
+      🧴
+      <span class="mock-tag" style="background:#fce4ec;color:#880e4f;">粉渐变</span>
+    </div>
+    <div class="mock-item" style="background:linear-gradient(135deg,#fef9ec,#fff);">
+      ☕
+      <span class="mock-tag" style="background:#fff8e1;color:#e65100;">奶油</span>
+    </div>
+    <div class="mock-item" style="background:linear-gradient(135deg,#e8e8e8,#f8f8f8);">
+      🎒
+      <span class="mock-tag" style="background:#eceff1;color:#455a64;">高级灰</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-label">核心功能</div>
+  <div class="section-title">为电商卖家<br/>量身打造</div>
+  <p class="section-sub">从拍摄到上架，背景处理是最耗时的环节之一。我们把它压缩到10秒。</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#fef9ec">🎯</div>
+      <h3>精准 AI 抠图</h3>
+      <p>基于 remove.bg 深度学习模型，边缘细节还原准确，连毛发、透明材质都能处理。</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#e8f4fd">🎨</div>
+      <h3>12+ 专业背景</h3>
+      <p>内置白底、渐变、深色科技等主流电商背景，也可上传自定义场景图。</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#e8f5e9">⚡</div>
+      <h3>10 秒出图</h3>
+      <p>上传即处理，无需等待。一张图从原始照片��专业主图，全程不超过10秒。</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#f3e5f5">📦</div>
+      <h3>高清导出</h3>
+      <p>输出 800×800 高清 PNG，符合拼多多、淘宝、京东等主流平台主图规格要求。</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="section-label">使用流程</div>
+  <div class="section-title">三步完成<br/>专业商品图</div>
+  <p class="section-sub">不需要任何设计经验，按步骤操作即可。</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>上传商品图</h3>
+      <p>支持手机拍摄的普通照片，JPG、PNG 均可，不要求专业光线或背景。</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>一键 AI 抠图</h3>
+      <p>点击按钮，AI 自动识别商品轮廓，精准去除原背景，保留商品细节。</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>选背景下载</h3>
+      <p>从预设中点选背景，实时预览效果，满意后一键下载高清成品图。</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>上架发布</h3>
+      <p>直接上传到拼多多、淘宝等平台商品主图位，专业效果立竿见影。</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="section-label">定价方案</div>
+  <div class="section-title">简单透明<br/>按需选择</div>
+  <p class="section-sub">每种方案都包含全部功能，区别只在使用次数。</p>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="price-name">体验版</div>
+      <div class="price-amount"><span>¥</span>9.9</div>
+      <div class="price-period">买断 · 50次使用</div>
+      <ul class="price-list">
+        <li>AI 精准抠图</li>
+        <li>12种专业背景</li>
+        <li>高清 PNG 导出</li>
+        <li>自定义背景上传</li>
+      </ul>
+      <a href="#" class="btn-plan btn-plan-outline">立即购买</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">🔥 最受欢迎</div>
+      <div class="price-name">专业版</div>
+      <div class="price-amount"><span>¥</span>29.9</div>
+      <div class="price-period">买断 · 200次使用</div>
+      <ul class="price-list">
+        <li>AI 精准抠图</li>
+        <li>12种专业背景</li>
+        <li>高清 PNG 导出</li>
+        <li>自定义背景上传</li>
+        <li>优先客服支持</li>
+      </ul>
+      <a href="#" class="btn-plan btn-plan-fill">立即购买</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name">不限量版</div>
+      <div class="price-amount"><span>¥</span>99</div>
+      <div class="price-period">买断 · 不限次数</div>
+      <ul class="price-list">
+        <li>AI 精准抠图</li>
+        <li>12种专业背景</li>
+        <li>高清 PNG 导出</li>
+        <li>自定义背景上传</li>
+        <li>优先客服支持</li>
+        <li>后续新功能免费</li>
+      </ul>
+      <a href="#" class="btn-plan btn-plan-outline">立即购买</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-label">用户反馈</div>
+  <div class="section-title">真实卖家<br/>亲身使用</div>
+  <p class="section-sub">来自拼多多、淘宝卖家的真实评价。</p>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">以前请人修图要等一两天，现在自己几秒搞定，主图点击率明显提升了，感觉很值。</p>
+      <div class="testi-author">
+        <div class="testi-avatar">小</div>
+        <div>
+          <div class="testi-name">小林服饰</div>
+          <div class="testi-role">拼多多女装卖家 · 月销200+单</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">做数码配件的，产品背景换成深色科技感，转化率直接涨了，这个工具太实用了。</p>
+      <div class="testi-author">
+        <div class="testi-avatar">阿</div>
+        <div>
+          <div class="testi-name">阿峰数码</div>
+          <div class="testi-role">拼多多数码卖家 · 月销500+单</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★☆</div>
+      <p class="testi-text">操作非常简单，我完全不懂PS也能出专业效果，买了不限量版放心用，推荐给同行了。</p>
+      <div class="testi-author">
+        <div class="testi-avatar">晴</div>
+        <div>
+          <div class="testi-name">晴天母婴</div>
+          <div class="testi-role">淘宝母婴卖家</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-final" id="tool">
+  <div class="section-label">现在开始</div>
+  <h2 class="section-title">告别难看的商品图<br/>10秒换出专业效果</h2>
+  <p class="section-sub">加入数百位电商卖家，用 AI 工具降低运营成本，提升店铺竞争力。</p>
+  <a href="tool.html" class="btn-cta-white">查看定价方案 →</a>
+  <p style="margin-top:20px;font-size:12px;color:rgba(255,255,255,.3)">
+    微信联系客服：Fish网创小助手 &nbsp;|&nbsp; 购买后永久有效
+  </p>
+</section>
+
+<footer>
+  <p>© 2025 Fish网创 · AI电商工具系列 &nbsp;|&nbsp;
+  <a href="#">使用条款</a> &nbsp;·&nbsp; <a href="#">联系我们</a></p>
+</footer>
+
+</body>
+</html>
